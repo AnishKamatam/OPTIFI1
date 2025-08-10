@@ -273,24 +273,25 @@
 .dashboard {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: #f6f7f9;
 }
 
 .dashboard-sidebar {
   width: 280px;
-  background: #1e293b;
-  color: white;
+  background: #ffffff;
+  color: #111827;
   padding: 24px 0;
   display: flex;
   flex-direction: column;
   position: fixed;
   height: 100vh;
   overflow-y: auto;
+  border-right: 1px solid #eceff3;
 }
 
 .sidebar-header {
   padding: 0 24px 24px;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .logo-title {
@@ -301,20 +302,21 @@
 
 .logo-title h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .logo-arrow {
-  color: #94a3b8;
+  color: #6b7280;
   flex-shrink: 0;
 }
 
 .subtitle {
-  font-size: 12px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
 .sidebar-nav {
@@ -339,53 +341,60 @@
 }
 
 .nav-item:hover {
-  background: #334155;
+  background: #f6f7f9;
 }
 
 .nav-item.active {
-  background: #0f172a;
-  border-right: 3px solid #3b82f6;
+  background: #111827;
+  color: #ffffff;
+  border-right: 0;
+  border-radius: 10px;
+  margin: 0 12px;
 }
+.nav-item.active .nav-label { color: #ffffff; }
 
 .nav-icon {
   width: 24px;
   text-align: center;
   flex-shrink: 0;
-  color: #94a3b8;
+  color: #6b7280;
 }
 
 .nav-item.active .nav-icon {
-  color: #3b82f6;
+  color: #ffffff;
 }
 
 .nav-label {
   flex: 1;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .live-tag {
-  background: #10b981;
-  color: white;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: none;
+  font-weight: 700;
 }
 
 .count {
-  background: #475569;
-  color: white;
+  background: #f3f4f6;
+  color: #334155;
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 600;
+  border-radius: 999px;
+  font-weight: 700;
 }
+.nav-item.active .count { background: rgba(255,255,255,0.16); color: #fff; }
 
 .sidebar-footer {
   padding: 24px;
-  border-top: 1px solid #334155;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .user-profile {
@@ -398,13 +407,13 @@
 .user-avatar {
   width: 32px;
   height: 32px;
-  background: #3b82f6;
+  background: #6366f1;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: white;
   flex-shrink: 0;
 }
@@ -416,12 +425,12 @@
 
 .user-role {
   font-size: 12px;
-  color: #94a3b8;
+  color: #6b7280;
 }
 
 .notification-icon {
   margin-left: auto;
-  color: #94a3b8;
+  color: #6b7280;
   flex-shrink: 0;
 }
 
@@ -430,7 +439,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #94a3b8;
+  color: #6b7280;
 }
 
 .status-dot {
@@ -453,16 +462,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eceff3;
 }
 
 .header-left h1 {
   margin: 0;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
 .header-right {
@@ -490,7 +500,7 @@
 
 .content-header h2 {
   margin: 0 0 8px;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: #0f172a;
 }
@@ -509,19 +519,19 @@
 }
 
 .metric-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #eceff3;
   display: flex;
   align-items: flex-start;
   gap: 16px;
 }
 
 .metric-icon {
-  width: 48px;
-  height: 48px;
-  background: #f1f5f9;
+  width: 44px;
+  height: 44px;
+  background: #f3f4f8;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -531,19 +541,19 @@
 }
 
 .metric-content h3 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
 .metric-value {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #0f172a;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .metric-trend {
@@ -566,14 +576,14 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .analytics-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #eceff3;
 }
 
 .card-header {
@@ -582,8 +592,8 @@
 
 .card-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #0f172a;
   display: flex;
   align-items: center;
@@ -605,7 +615,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f0f2f6;
 }
 
 .analytics-item:last-child {
@@ -650,15 +660,15 @@
 }
 
 .member-avatar {
-  width: 32px;
-  height: 32px;
-  background: #3b82f6;
+  width: 28px;
+  height: 28px;
+  background: #6366f1;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: white;
   flex-shrink: 0;
 }
@@ -719,13 +729,13 @@
 }
 
 .project-code {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #f3f4f8;
+  color: #6b7280;
   font-size: 11px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .project-status {
@@ -744,7 +754,7 @@
 }
 
 .status-badge.success {
-  background: #dcfce7;
+  background: #e8f9ef;
   color: #166534;
 }
 
@@ -758,15 +768,15 @@
 .progress-bar {
   flex: 1;
   height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
+  background: #eceff3;
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #0f172a;
-  border-radius: 4px;
+  background: #111827;
+  border-radius: 999px;
   transition: width 0.3s ease;
 }
 
@@ -827,12 +837,12 @@
 }
 
 .plan-badge.enterprise {
-  background: #f3e8ff;
-  color: #7c3aed;
+  background: #eee9ff;
+  color: #6d28d9;
 }
 
 .plan-badge.pro {
-  background: #dbeafe;
+  background: #e6efff;
   color: #1d4ed8;
 }
 
