@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "seed:boba": "node ./scripts/seedBoba.js",
     "db:create:inventory": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_inventory.sql','utf8'))\" | cat",
-    "seed:inventory": "node ./scripts/seedInventory.js"
+    "seed:inventory": "node ./scripts/seedInventory.js",
+    "db:create:employees": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_employees.sql','utf8'))\" | cat",
+    "seed:employees": "node ./scripts/seedEmployees.js",
+    "db:create:timesheets": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_timesheets.sql','utf8'))\" | cat",
+    "seed:timesheets": "node ./scripts/seedTimesheets.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
