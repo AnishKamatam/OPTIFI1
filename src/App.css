@@ -324,6 +324,9 @@
   padding: 24px 0;
 }
 
+.sidebar-section { padding: 8px 0 16px; }
+.sidebar-section-title { color: #6b7280; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 24px; }
+
 .sidebar-nav ul {
   list-style: none;
   margin: 0;
@@ -590,9 +593,10 @@
 }
 
 /* List cards */
-.list-card { display: flex; flex-direction: column; gap: 8px; }
-.list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 12px; background: #fafbfc; border: 1px solid #f1f3f5; }
-.list-item.ops-item { background: #ffffff; }
+.list-card { display: flex; flex-direction: column; }
+.list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f2f6; background: transparent; border-radius: 0; }
+.list-item:last-child { border-bottom: none; }
+.list-item.ops-item { background: transparent; }
 .list-left { display: flex; flex-direction: column; }
 .list-right { text-align: right; }
 .list-title { font-size: 14px; font-weight: 600; color: #0f172a; }
@@ -601,6 +605,17 @@
 .trend-positive { color: #16a34a; font-size: 12px; font-weight: 600; }
 .status-chip { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid #e5e7eb; }
 .status-chip.green { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+
+/* Inventory table */
+.inventory-table { display: flex; flex-direction: column; }
+.inventory-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 12px 0; font-weight: 700; color: #0f172a; border-bottom: 1px solid #eceff3; }
+.inventory-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f2f6; background: transparent; }
+.inventory-row:last-child { border-bottom: none; }
+.inventory-category { font-weight: 700; }
+.chip { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #e5e7eb; }
+.chip.green { background: #10b981; color: #fff; border-color: #10b981; }
+.chip.gray { background: #eef2ff; color: #111827; border-color: #e5e7eb; }
+.chip.red { background: #ef4444; color: #fff; border-color: #ef4444; }
 
 .card-header {
   margin-bottom: 20px;

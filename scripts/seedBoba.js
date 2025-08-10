@@ -92,6 +92,17 @@ async function main() {
 
       let price = avoidPointFive(basePrice)
 
+      // approximate cost model
+      let costBase = size === 'Regular' ? 2.1 + Math.random() * 0.4 : 2.6 + Math.random() * 0.5
+      if (item === 'Brown Sugar Boba' || item === 'Matcha Latte') {
+        costBase += 0.15 + Math.random() * 0.15
+      }
+      if (addon !== 'None') {
+        costBase += 0.18 + Math.random() * 0.18
+      }
+      const cost = avoidPointFive(costBase)
+      const margin = avoidPointFive(price - cost)
+
       // Occasionally nudge off .00 for realism
       const cents = Math.round(price * 100) % 100
       if (cents === 0) price = avoidPointFive(price + 0.03)
@@ -103,7 +114,9 @@ async function main() {
         size,
         add_on: addon,
         price,
-        payment_method: randomChoice(paymentMethods)
+        payment_method: randomChoice(paymentMethods),
+        cost,
+        margin
       }
       allRows.push(row)
       transactionId += 1

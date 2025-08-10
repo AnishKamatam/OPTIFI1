@@ -7,6 +7,7 @@ import {
   Package,
   Users,
   DollarSign,
+  UserCheck,
   Bell,
   LogOut,
   TrendingUp
@@ -33,12 +34,33 @@ export default function Dashboard() {
     return parts.substring(0, 2).toUpperCase()
   }
 
-  const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, active: true },
-    { label: 'Finances', icon: DollarSign },
-    { label: 'Inventory', icon: Package },
-    { label: 'CRM', icon: Users },
-    { label: 'Analytics', icon: BarChart3 }
+  const navSections = [
+    {
+      header: 'Business Insights',
+      items: [
+        { label: 'Dashboard', icon: LayoutDashboard, active: true },
+        { label: 'Analytics', icon: BarChart3 }
+      ]
+    },
+    {
+      header: 'Financial Reports',
+      items: [
+        { label: 'Finances', icon: DollarSign }
+      ]
+    },
+    {
+      header: 'Sales Allocation',
+      items: [
+        { label: 'Staff', icon: UserCheck }
+      ]
+    },
+    {
+      header: 'Inventory Management',
+      items: [
+        { label: 'Inventory', icon: Package },
+        { label: 'CRM', icon: Users }
+      ]
+    }
   ]
 
   // Compute avg transaction delta vs yesterday
@@ -51,22 +73,19 @@ export default function Dashboard() {
 
   const topMetrics = [
     { title: 'Foot Traffic', value: '1,247', delta: { text: '+8.2% Today', positive: true } },
-    { title: 'Conversion Rate', value: '3.8%', delta: { text: '+0.3% This Week', positive: true } },
+    { title: 'Staff On Hand', value: '6', delta: { text: '+1 vs Yesterday', positive: true } },
     { title: 'Avg Transaction', value: avgTransaction === null ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(avgTransaction), delta: avgDelta }
   ]
 
-  const products = [
-    { name: 'Winter Jackets', meta: '67 units • 45% margin', value: '$8,420', trend: '+45% profit' },
-    { name: 'Running Shoes', meta: '89 units • 38% margin', value: '$6,890', trend: '+38% profit' },
-    { name: 'Jeans Collection', meta: '124 units • 52% margin', value: '$5,240', trend: '+52% profit' },
-    { name: 'Accessories', meta: '156 units • 62% margin', value: '$3,180', trend: '+62% profit' }
-  ]
+  const [topProducts, setTopProducts] = useState([])
 
-  const operations = [
-    { title: 'Store Cleanliness', target: 'Target: 90%', score: 92, status: 'Excellent' },
-    { title: 'Customer Service', target: 'Target: 85%', score: 88, status: 'Good' },
-    { title: 'Inventory Accuracy', target: 'Target: 95%', score: 96, status: 'Excellent' },
-    { title: 'Staff Productivity', target: 'Target: 80%', score: 84, status: 'Good' }
+  // operations card replaced by inventory table
+
+  const inventory = [
+    { category: 'Tea Leaves & Powder', stock: 45, value: 2840, turnover: '12.3x', status: 'Optimal' },
+    { category: 'Milk & Dairy', stock: 28, value: 1230, turnover: '18.7x', status: 'Good' },
+    { category: 'Tapioca Pearls & Toppings', stock: 67, value: 890, turnover: '24.2x', status: 'Optimal' },
+    { category: 'Cups, Straws & Supplies', stock: 312, value: 645, turnover: '15.8x', status: 'Low Stock' }
   ]
 
   const recentCustomers = [
@@ -81,7 +100,7 @@ export default function Dashboard() {
     { name: 'Jordan Lee', percent: 88 }
   ]
 
-  // Fetch today's and yesterday's revenue from Supabase
+  // Fetch today's and yesterday's revenue from Supabase and compute top products
   useEffect(() => {
     async function fetchRevenue() {
       const today = new Date()
@@ -100,7 +119,7 @@ export default function Dashboard() {
 
       const { data, error } = await supabase
         .from('boba_transactions')
-        .select('date, price')
+        .select('date, item, price, margin')
         .in('date', [todayStr, yestStr])
 
       if (error) {
@@ -114,14 +133,38 @@ export default function Dashboard() {
       let yestTotal = 0
       let todayCount = 0
       let yestCount = 0
+      const agg = new Map() // item -> { units, revenue, margin }
       for (const row of data || []) {
-        if (row.date === todayStr) { todayTotal += Number(row.price || 0); todayCount += 1 }
+        if (row.date === todayStr) {
+          const priceNum = Number(row.price || 0)
+          const marginNum = Number(row.margin || 0)
+          todayTotal += priceNum
+          todayCount += 1
+          const key = row.item || 'Unknown'
+          const current = agg.get(key) || { item: key, units: 0, revenue: 0, margin: 0 }
+          current.units += 1
+          current.revenue += priceNum
+          current.margin += marginNum
+          agg.set(key, current)
+        }
         if (row.date === yestStr) { yestTotal += Number(row.price || 0); yestCount += 1 }
       }
       setDailyRevenue(todayTotal)
       setYesterdayRevenue(yestTotal)
       setAvgTransaction(todayCount > 0 ? todayTotal / todayCount : 0)
       setYesterdayAvgTransaction(yestCount > 0 ? yestTotal / yestCount : 0)
+
+      // Convert to display-ready top products (top 4 by revenue)
+      const top = Array.from(agg.values())
+        .sort((a, b) => b.revenue - a.revenue || b.units - a.units)
+        .slice(0, 4)
+        .map((p) => ({
+          name: p.item,
+          meta: `${p.units} units • ${(p.margin / Math.max(1, p.revenue) * 100).toFixed(0)}% margin`,
+          value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.revenue),
+          trend: `+${Math.round((p.margin / Math.max(1, p.revenue)) * 100)}% profit`
+        }))
+      setTopProducts(top)
     }
     fetchRevenue()
   }, [])
@@ -133,43 +176,31 @@ export default function Dashboard() {
           <div className="logo-title">
             <LayoutDashboard className="logo-arrow" size={18} />
             <div>
-              <h1>Store Dashboard</h1>
-              <span className="subtitle">Store Management</span>
+              <h1>Boba Bliss</h1>
             </div>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          <ul>
-            {navItems.map((item) => (
-              <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
-                <item.icon className="nav-icon" size={18} />
-                <span className="nav-label">{item.label}</span>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="user-profile">
-            <div className="user-avatar">{getUserInitials(user?.email)}</div>
-            <div className="user-info">
-              <div className="user-name">{user?.email?.split('@')[0] || 'User'}</div>
-              <div className="user-role">Store Manager</div>
+          {navSections.map((section) => (
+            <div key={section.header} className="sidebar-section">
+              <div className="sidebar-section-title">{section.header}</div>
+              <ul>
+                {section.items.map((item) => (
+                  <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
+                    <item.icon className="nav-icon" size={18} />
+                    <span className="nav-label">{item.label}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <Bell className="notification-icon" size={16} />
-          </div>
-          <div className="system-status">
-            <span className="status-dot green"></span>
-            <span>Store Open</span>
-          </div>
-        </div>
+          ))}
+        </nav>
       </aside>
 
       <main className="dashboard-main">
         <header className="dashboard-header">
           <div className="header-left">
-            <h1>Store Overview</h1>
             <span className="live-tag">Live Data</span>
           </div>
           <div className="header-right">
@@ -255,7 +286,7 @@ export default function Dashboard() {
               <h3>Top Selling Products</h3>
             </div>
             <div className="list-card">
-              {products.map((p) => (
+              {topProducts.map((p) => (
                 <div key={p.name} className="list-item">
                   <div className="list-left">
                     <div className="list-title">{p.name}</div>
@@ -272,22 +303,26 @@ export default function Dashboard() {
 
           <div className="analytics-card">
             <div className="card-header">
-              <h3>Store Operations</h3>
+              <h3>Inventory</h3>
             </div>
-            <div className="list-card">
-              {operations.map((op) => (
-                <div key={op.title} className="list-item ops-item">
-                  <div className="list-left">
-                    <div className="list-title">{op.title}</div>
-                    <div className="list-sub">{op.target}</div>
-                    <div className="progress-bar thin">
-                      <div className="progress-fill" style={{ width: `${op.score}%` }}></div>
-                    </div>
-                    <div className="list-sub">Score</div>
-                  </div>
-                  <div className="list-right">
-                    <span className={`status-chip ${op.status === 'Excellent' ? 'green' : 'gray'}`}>{op.status}</span>
-                    <div className="list-value">{op.score}%</div>
+            <div className="inventory-table">
+              <div className="inventory-header">
+                <div className="inventory-cell">Category</div>
+                <div className="inventory-cell">Stock Level</div>
+                <div className="inventory-cell">Value</div>
+                <div className="inventory-cell">Turnover</div>
+                <div className="inventory-cell">Status</div>
+              </div>
+              {inventory.map((row) => (
+                <div key={row.category} className="inventory-row">
+                  <div className="inventory-cell inventory-category">{row.category}</div>
+                  <div className="inventory-cell">{row.stock} units</div>
+                  <div className="inventory-cell">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(row.value)}</div>
+                  <div className="inventory-cell">{row.turnover}</div>
+                  <div className="inventory-cell">
+                    <span className={`chip ${row.status === 'Optimal' ? 'green' : row.status === 'Good' ? 'gray' : 'red'}`}>
+                      {row.status}
+                    </span>
                   </div>
                 </div>
               ))}
