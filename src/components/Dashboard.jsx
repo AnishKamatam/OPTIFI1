@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import InventoryPage from './InventoryPage'
 import {
   LayoutDashboard,
   BarChart3,
@@ -16,6 +17,7 @@ import {
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
+  const [currentPage, setCurrentPage] = useState('dashboard')
   const [dailyRevenue, setDailyRevenue] = useState(null)
   const [yesterdayRevenue, setYesterdayRevenue] = useState(null)
   const [avgTransaction, setAvgTransaction] = useState(null)
@@ -39,31 +41,39 @@ export default function Dashboard() {
     return parts.substring(0, 2).toUpperCase()
   }
 
+  const handleNavigation = (path) => {
+    if (path === '/inventory') {
+      setCurrentPage('inventory')
+    } else if (path === '/dashboard') {
+      setCurrentPage('dashboard')
+    }
+  }
+
   const navSections = [
     {
       header: 'Business Insights',
       items: [
-        { label: 'Dashboard', icon: LayoutDashboard, active: true },
-        { label: 'Analytics', icon: BarChart3 }
+        { label: 'Dashboard', icon: LayoutDashboard, active: currentPage === 'dashboard', path: '/dashboard' },
+        { label: 'Analytics', icon: BarChart3, active: currentPage === 'analytics', path: '/analytics' }
       ]
     },
     {
       header: 'Financial Reports',
       items: [
-        { label: 'Finances', icon: DollarSign }
+        { label: 'Finances', icon: DollarSign, active: currentPage === 'finances', path: '/finances' }
       ]
     },
     {
       header: 'Sales Allocation',
       items: [
-        { label: 'Staff', icon: UserCheck }
+        { label: 'Staff', icon: UserCheck, active: currentPage === 'staff', path: '/staff' }
       ]
     },
     {
       header: 'Inventory Management',
       items: [
-        { label: 'Inventory', icon: Package },
-        { label: 'CRM', icon: Users }
+        { label: 'Inventory', icon: Package, active: currentPage === 'inventory', path: '/inventory' },
+        { label: 'CRM', icon: Users, active: currentPage === 'crm', path: '/crm' }
       ]
     }
   ]
@@ -82,19 +92,16 @@ export default function Dashboard() {
     { title: 'Avg Transaction', value: avgTransaction === null ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(avgTransaction), delta: avgDelta }
   ]
 
-
-
   // operations card replaced by inventory table
-
   const [atRiskInventory, setAtRiskInventory] = useState([])
 
   // Format helpers
-
   // Helpers for shifts formatting
   const toLocalTime = (iso) => {
     const d = new Date(iso)
     return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
   }
+  
   const diffToNow = (iso) => {
     const ms = new Date(iso) - new Date()
     if (ms <= 0) return 'Now'
@@ -103,6 +110,7 @@ export default function Dashboard() {
     const m = mins % 60
     return h > 0 ? `${h}h ${m}m` : `${m}m`
   }
+  
   const initialsFromName = (name) => name.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase()
 
   // Fetch today's and yesterday's revenue from Supabase and compute top products
@@ -198,6 +206,7 @@ export default function Dashboard() {
     }
     fetchTransactions()
   }, [])
+
   // Fetch upcoming shifts (next 24h) and current staff on hand
   useEffect(() => {
     async function fetchShifts() {
@@ -259,6 +268,7 @@ export default function Dashboard() {
     const id = setInterval(fetchShifts, 60000)
     return () => clearInterval(id)
   }, [])
+
   // Fetch most at-risk inventory (lowest actual/par ratio)
   useEffect(() => {
     async function fetchInventory() {
@@ -310,7 +320,12 @@ export default function Dashboard() {
               <div className="sidebar-section-title">{section.header}</div>
               <ul>
                 {section.items.map((item) => (
-                  <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
+                  <li 
+                    key={item.label} 
+                    className={`nav-item${item.active ? ' active' : ''}`}
+                    onClick={() => handleNavigation(item.path)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <item.icon className="nav-icon" size={18} />
                     <span className="nav-label">{item.label}</span>
                   </li>
@@ -322,196 +337,184 @@ export default function Dashboard() {
       </aside>
 
       <main className="dashboard-main">
-        <header className="dashboard-header">
-          <div className="header-left">
-            <span className="live-tag">Live Data</span>
-          </div>
-          <div className="header-right">
-            <div className="status-indicator">
-              <span className="status-dot green"></span>
-              <span>Store Open</span>
-            </div>
-            <div className="date">
-              {new Date().toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
-            <div className="user-avatar">{getUserInitials(user?.email)}</div>
-            <button onClick={handleSignOut} className="button button--ghost button--small" style={{ marginLeft: '16px' }}>
-              <LogOut size={16} style={{ marginRight: '6px' }} />
-              Sign Out
-            </button>
-          </div>
-        </header>
-
-        {/* content header removed per request */}
-
-        <div className="metrics-row">
-          {/* Daily Revenue with delta vs yesterday */}
-          <div className="metric-card">
-            <div className="metric-content" style={{ width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3>Daily Revenue</h3>
+        {currentPage === 'inventory' ? (
+          <InventoryPage onNavigateBack={() => setCurrentPage('dashboard')} />
+        ) : (
+          <>
+            <header className="dashboard-header">
+              <div className="header-left">
+                <span className="live-tag">Live Data</span>
               </div>
-              <div className="metric-value">
-                {dailyRevenue === null
-                  ? '—'
-                  : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(dailyRevenue)}
+              <div className="header-right">
+                <div className="status-indicator">
+                  <span className="status-dot green"></span>
+                  <span>Store Open</span>
+                </div>
+                <div className="date">
+                  {new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+                <div className="user-avatar">{getUserInitials(user?.email)}</div>
+                <button onClick={handleSignOut} className="button button--ghost button--small" style={{ marginLeft: '16px' }}>
+                  <LogOut size={16} style={{ marginRight: '6px' }} />
+                  Sign Out
+                </button>
               </div>
-              {dailyRevenue !== null && yesterdayRevenue !== null && (
-                (() => {
-                  const base = Number(yesterdayRevenue || 0)
-                  if (base === 0) {
-                    return (
-                      <div className="metric-trend positive">
-                        <TrendingUp size={12} /> n/a vs Yesterday
+            </header>
+
+            <div className="metrics-row">
+              {/* Daily Revenue with delta vs yesterday */}
+              <div className="metric-card">
+                <div className="metric-content" style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3>Daily Revenue</h3>
+                  </div>
+                  <div className="metric-value">
+                    {dailyRevenue === null
+                      ? '—'
+                      : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(dailyRevenue)}
+                  </div>
+                  {dailyRevenue !== null && yesterdayRevenue !== null && (
+                    (() => {
+                      const base = Number(yesterdayRevenue || 0)
+                      if (base === 0) {
+                        return (
+                          <div className="metric-trend positive">
+                            <TrendingUp size={12} /> n/a vs Yesterday
+                          </div>
+                        )
+                      }
+                      const pct = ((dailyRevenue - base) / base) * 100
+                      const isPositive = pct >= 0
+                      return (
+                        <div className={`metric-trend ${isPositive ? 'positive' : 'negative'}`}>
+                          <TrendingUp size={12} style={!isPositive ? { transform: 'rotate(180deg)' } : undefined} />
+                          {`${isPositive ? '+' : ''}${pct.toFixed(1)}% vs Yesterday`}
+                        </div>
+                      )
+                    })()
+                  )}
+                </div>
+              </div>
+
+              {topMetrics.map(({ title, value, delta }) => (
+                <div key={title} className="metric-card">
+                  <div className="metric-content" style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3>{title}</h3>
+                    </div>
+                    <div className="metric-value">{value}</div>
+                    {delta && (
+                      <div className={`metric-trend ${delta.positive === false ? 'negative' : 'positive'}`}>
+                        <TrendingUp size={12} style={delta.positive === false ? { transform: 'rotate(180deg)' } : undefined} />
+                        {typeof delta === 'string' ? delta : delta.text}
                       </div>
-                    )
-                  }
-                  const pct = ((dailyRevenue - base) / base) * 100
-                  const isPositive = pct >= 0
-                  return (
-                    <div className={`metric-trend ${isPositive ? 'positive' : 'negative'}`}>
-                      <TrendingUp size={12} style={!isPositive ? { transform: 'rotate(180deg)' } : undefined} />
-                      {`${isPositive ? '+' : ''}${pct.toFixed(1)}% vs Yesterday`}
-                    </div>
-                  )
-                })()
-              )}
-            </div>
-          </div>
-
-          {topMetrics.map(({ title, value, delta }) => (
-            <div key={title} className="metric-card">
-              <div className="metric-content" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>{title}</h3>
-                  
-                </div>
-                <div className="metric-value">{value}</div>
-                {delta && (
-                  <div className={`metric-trend ${delta.positive === false ? 'negative' : 'positive'}`}>
-                    <TrendingUp size={12} style={delta.positive === false ? { transform: 'rotate(180deg)' } : undefined} />
-                    {typeof delta === 'string' ? delta : delta.text}
+                    )}
                   </div>
-                )}
+                </div>
+              ))}
+            </div>
+
+            <div className="analytics-row">
+              <div className="analytics-card">
+                <div className="card-header">
+                  <h3>Top Selling Products</h3>
+                </div>
+                <div className="list-card">
+                  {topProducts.map((p) => (
+                    <div key={p.name} className="list-item">
+                      <div className="list-left">
+                        <div className="list-title">{p.name}</div>
+                        <div className="list-sub">{p.meta}</div>
+                      </div>
+                      <div className="list-right">
+                        <div className="list-value">{p.value}</div>
+                        <div className="trend-positive">{p.trend}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="analytics-card">
+                <div className="card-header">
+                  <h3>At-Risk Inventory</h3>
+                </div>
+                <div className="inventory-table">
+                  <div className="inventory-header">
+                    <div className="inventory-cell">Category</div>
+                    <div className="inventory-cell">Stock Level</div>
+                    <div className="inventory-cell">Par Level</div>
+                    <div className="inventory-cell">Value</div>
+                    <div className="inventory-cell">Status</div>
+                  </div>
+                  {atRiskInventory.map((row) => (
+                    <div key={row.category} className="inventory-row">
+                      <div className="inventory-cell inventory-category">{row.category}</div>
+                      <div className="inventory-cell">{row.stock} {row.unit}</div>
+                      <div className="inventory-cell">{row.par}</div>
+                      <div className="inventory-cell">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(row.value)}</div>
+                      <div className="inventory-cell">
+                        <span className={`chip ${row.status === 'Optimal' ? 'green' : row.status === 'Good' ? 'gray' : 'red'}`}>
+                          {row.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="analytics-card">
+                <div className="card-header">
+                  <h3>Recent Transactions</h3>
+                </div>
+                <div className="list-card">
+                  {recentTransactions.map((t) => (
+                    <div key={`${t.supplier}-${t.dateStr}`} className="list-item">
+                      <div className="list-left">
+                        <div className="list-title">{t.supplier}</div>
+                        <div className="list-sub">{t.description} • {t.category}</div>
+                      </div>
+                      <div className="list-right">
+                        <div className="list-value">{t.amountStr}</div>
+                        <div className="list-sub">{t.dateStr}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="analytics-row">
-          <div className="analytics-card">
-            <div className="card-header">
-              <h3>Top Selling Products</h3>
-            </div>
-            <div className="list-card">
-              {topProducts.map((p) => (
-                <div key={p.name} className="list-item">
-                  <div className="list-left">
-                    <div className="list-title">{p.name}</div>
-                    <div className="list-sub">{p.meta}</div>
-                  </div>
-                  <div className="list-right">
-                    <div className="list-value">{p.value}</div>
-                    <div className="trend-positive">{p.trend}</div>
-                  </div>
+            <div className="bottom-row">
+              <div className="analytics-card">
+                <div className="card-header">
+                  <h3>Upcoming Shifts</h3>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="analytics-card">
-            <div className="card-header">
-              <h3>Inventory</h3>
-            </div>
-            <div className="inventory-table">
-              <div className="inventory-header">
-                <div className="inventory-cell">Category</div>
-                <div className="inventory-cell">Stock Level</div>
-                <div className="inventory-cell">Value</div>
-                <div className="inventory-cell inventory-status">Status</div>
-              </div>
-              {(atRiskInventory.length ? atRiskInventory : []).map((row) => (
-                <div key={row.category} className="inventory-row">
-                  <div className="inventory-cell inventory-category">{row.category}</div>
-                  <div className="inventory-cell">{row.stock} {row.unit}</div>
-                  <div className="inventory-cell">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(row.value)}</div>
-                  <div className="inventory-cell inventory-status">
-                    <span className={`chip ${row.status === 'Optimal' ? 'green' : row.status === 'Good' ? 'gray' : 'red'}`}>
-                      {row.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {atRiskInventory.length === 0 && (
-                <div className="inventory-row">
-                  <div className="inventory-cell inventory-category">No inventory data yet</div>
-                  <div className="inventory-cell">—</div>
-                  <div className="inventory-cell">—</div>
-                  <div className="inventory-cell">—</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="bottom-row">
-          <div className="analytics-card">
-            <div className="card-header">
-              <h3>Recent Transactions</h3>
-            </div>
-            <div className="list-card">
-              {recentTransactions.map((t, idx) => (
-                <div key={`${t.supplier}-${idx}`} className="list-item">
-                  <div className="list-left">
-                    <div className="list-title">{t.supplier}</div>
-                    <div className="list-sub">{t.category} • {t.dateStr}</div>
-                    <div className="list-sub" style={{ color: '#94a3b8' }}>{t.description}</div>
-                  </div>
-                  <div className="list-right">
-                    <div className="list-value">{t.amountStr}</div>
-                    <div className="list-sub">{t.method}</div>
-                  </div>
-                </div>
-              ))}
-              {recentTransactions.length === 0 && (
-                <div className="list-item">
-                  <div className="list-left">
-                    <div className="list-title">No transactions yet</div>
-                    <div className="list-sub">Seed with npm run seed:transactions</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="analytics-card">
-            <div className="card-header">
-              <h3><Clock size={18} /> Upcoming Shifts</h3>
-            </div>
-            <div className="shift-list">
-              {upcomingShifts.map((s) => (
-                <div key={`${s.employeeId}-${s.start}`} className="shift-item">
-                  <div className="shift-left">
-                    <div className="shift-avatar">{s.initials}</div>
-                    <div>
-                      <div className="shift-name">{s.name}</div>
-                      <div className="shift-meta">{s.role} • {s.time}</div>
+                <div className="shift-list">
+                  {upcomingShifts.map((s) => (
+                    <div key={`${s.employeeId}-${s.start}`} className="shift-item">
+                      <div className="shift-left">
+                        <div className="shift-avatar">{s.initials}</div>
+                        <div>
+                          <div className="shift-name">{s.name}</div>
+                          <div className="shift-meta">{s.role} • {s.time}</div>
+                        </div>
+                      </div>
+                      <div className="shift-right">
+                        <div className="shift-eta">{s.eta}</div>
+                        <span className={`badge ${s.status === 'Starting Soon' ? 'badge--orange' : s.status === 'Upcoming' ? 'badge--gray' : 'badge--outline'}`}>{s.status}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="shift-right">
-                    <div className="shift-eta">{s.eta}</div>
-                    <span className={`badge ${s.status === 'Starting Soon' ? 'badge--orange' : s.status === 'Upcoming' ? 'badge--gray' : 'badge--outline'}`}>{s.status}</span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </main>
     </div>
   )

@@ -918,8 +918,8 @@
 
 /* Inventory table */
 .inventory-table { display: flex; flex-direction: column; }
-.inventory-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 12px 0; font-weight: 700; color: #0f172a; border-bottom: 1px solid #eceff3; }
-.inventory-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f2f6; background: transparent; }
+.inventory-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 12px 0; font-weight: 700; color: #0f172a; border-bottom: 1px solid #eceff3; }
+.inventory-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f2f6; background: transparent; }
 .inventory-row:last-child { border-bottom: none; }
 .inventory-category { font-weight: 700; }
 .chip { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #e5e7eb; }
@@ -939,6 +939,34 @@
 .badge--orange { background: #fb923c; color: #fff; }
 .badge--gray { background: #eef2ff; color: #111827; }
 .badge--outline { background: #fff; color: #111827; border: 1px solid #e5e7eb; }
+
+/* Inventory page styles */
+.inventory-page {
+  padding: 0;
+}
+
+.inventory-page .dashboard-header {
+  margin-bottom: 24px;
+}
+
+.inventory-page .content-header {
+  margin-bottom: 24px;
+}
+
+.inventory-page .content-header input,
+.inventory-page .content-header select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.inventory-page .content-header input:focus,
+.inventory-page .content-header select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
 
 .card-header {
   margin-bottom: 20px;
