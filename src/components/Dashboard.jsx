@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import InventoryPage from './InventoryPage'
+//
 import {
   LayoutDashboard,
   BarChart3,
@@ -17,7 +17,7 @@ import {
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
-  const [currentPage, setCurrentPage] = useState('dashboard')
+  // single page dashboard, no local routing
   const [dailyRevenue, setDailyRevenue] = useState(null)
   const [yesterdayRevenue, setYesterdayRevenue] = useState(null)
   const [avgTransaction, setAvgTransaction] = useState(null)
@@ -41,39 +41,31 @@ export default function Dashboard() {
     return parts.substring(0, 2).toUpperCase()
   }
 
-  const handleNavigation = (path) => {
-    if (path === '/inventory') {
-      setCurrentPage('inventory')
-    } else if (path === '/dashboard') {
-      setCurrentPage('dashboard')
-    }
-  }
-
   const navSections = [
     {
       header: 'Business Insights',
       items: [
-        { label: 'Dashboard', icon: LayoutDashboard, active: currentPage === 'dashboard', path: '/dashboard' },
-        { label: 'Analytics', icon: BarChart3, active: currentPage === 'analytics', path: '/analytics' }
+        { label: 'Dashboard', icon: LayoutDashboard, active: true, path: '/dashboard' },
+        { label: 'Analytics', icon: BarChart3, active: false, path: '/analytics' }
       ]
     },
     {
       header: 'Financial Reports',
       items: [
-        { label: 'Finances', icon: DollarSign, active: currentPage === 'finances', path: '/finances' }
+        { label: 'Finances', icon: DollarSign, active: false, path: '/finances' }
       ]
     },
     {
       header: 'Sales Allocation',
       items: [
-        { label: 'Staff', icon: UserCheck, active: currentPage === 'staff', path: '/staff' }
+        { label: 'Staff', icon: UserCheck, active: false, path: '/staff' }
       ]
     },
     {
       header: 'Inventory Management',
       items: [
-        { label: 'Inventory', icon: Package, active: currentPage === 'inventory', path: '/inventory' },
-        { label: 'CRM', icon: Users, active: currentPage === 'crm', path: '/crm' }
+        { label: 'Inventory', icon: Package, active: false, path: '/inventory' },
+        { label: 'CRM', icon: Users, active: false, path: '/crm' }
       ]
     }
   ]
@@ -111,7 +103,13 @@ export default function Dashboard() {
     return h > 0 ? `${h}h ${m}m` : `${m}m`
   }
   
-  const initialsFromName = (name) => name.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase()
+  const initialsFromName = (name) => (name ? name : '??')
+    .split(' ')
+    .filter(Boolean)
+    .map(s => s[0])
+    .slice(0,2)
+    .join('')
+    .toUpperCase()
 
   // Fetch today's and yesterday's revenue from Supabase and compute top products
   useEffect(() => {
@@ -319,29 +317,15 @@ export default function Dashboard() {
             <div key={section.header} className="sidebar-section">
               <div className="sidebar-section-title">{section.header}</div>
               <ul>
-<<<<<<< Updated upstream
                 {section.items.map((item) => (
-                  <li 
-                    key={item.label} 
-                    className={`nav-item${item.active ? ' active' : ''}`}
-                    onClick={() => handleNavigation(item.path)}
-                    style={{ cursor: 'pointer' }}
-                  >
+                  <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
                     <item.icon className="nav-icon" size={18} />
                     <span className="nav-label">{item.label}</span>
+                    {item.label === 'Finances' && (
+                      <a href="/finances" style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>Open</a>
+                    )}
                   </li>
                 ))}
-=======
-            {section.items.map((item) => (
-              <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
-                <item.icon className="nav-icon" size={18} />
-                <span className="nav-label">{item.label}</span>
-                {item.label === 'Finances' && (
-                  <a href="/financials" style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>Open</a>
-                )}
-              </li>
-            ))}
->>>>>>> Stashed changes
               </ul>
             </div>
           ))}
@@ -524,8 +508,8 @@ export default function Dashboard() {
                     <div className="trend-positive">{p.trend}</div>
                   </div>
 >>>>>>> Stashed changes
-                </div>
-                <div className="shift-list">
+            </div>
+            <div className="shift-list">
                   {upcomingShifts.map((s) => (
                     <div key={`${s.employeeId}-${s.start}`} className="shift-item">
                       <div className="shift-left">
@@ -545,7 +529,7 @@ export default function Dashboard() {
               </div>
             </div>
           </>
-        )}
+        
       </main>
     </div>
   )
