@@ -918,14 +918,27 @@
 
 /* Inventory table */
 .inventory-table { display: flex; flex-direction: column; }
-.inventory-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 12px 0; font-weight: 700; color: #0f172a; border-bottom: 1px solid #eceff3; }
-.inventory-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f2f6; background: transparent; }
+.inventory-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 12px 0; font-weight: 700; color: #0f172a; border-bottom: 1px solid #eceff3; }
+.inventory-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f2f6; background: transparent; }
 .inventory-row:last-child { border-bottom: none; }
 .inventory-category { font-weight: 700; }
 .chip { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #e5e7eb; }
 .chip.green { background: #10b981; color: #fff; border-color: #10b981; }
 .chip.gray { background: #eef2ff; color: #111827; border-color: #e5e7eb; }
 .chip.red { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+.shift-list { display: flex; flex-direction: column; gap: 12px; }
+.shift-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 12px; border-radius: 12px; background: #fafbfc; }
+.shift-left { display: flex; gap: 12px; align-items: center; }
+.shift-avatar { width: 40px; height: 40px; border-radius: 999px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #374151; }
+.shift-name { font-weight: 700; color: #0f172a; }
+.shift-meta { font-size: 14px; color: #6b7280; }
+.shift-right { display: flex; align-items: center; gap: 12px; }
+.shift-eta { color: #6b7280; font-size: 14px; }
+.badge { padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.badge--orange { background: #fb923c; color: #fff; }
+.badge--gray { background: #eef2ff; color: #111827; }
+.badge--outline { background: #fff; color: #111827; border: 1px solid #e5e7eb; }
 
 .card-header {
   margin-bottom: 20px;

@@ -8,6 +8,7 @@ import {
   Users,
   DollarSign,
   UserCheck,
+  Clock,
   Bell,
   LogOut,
   TrendingUp
@@ -81,12 +82,7 @@ export default function Dashboard() {
 
   // operations card replaced by inventory table
 
-  const inventory = [
-    { category: 'Tea Leaves & Powder', stock: 45, value: 2840, turnover: '12.3x', status: 'Optimal' },
-    { category: 'Milk & Dairy', stock: 28, value: 1230, turnover: '18.7x', status: 'Good' },
-    { category: 'Tapioca Pearls & Toppings', stock: 67, value: 890, turnover: '24.2x', status: 'Optimal' },
-    { category: 'Cups, Straws & Supplies', stock: 312, value: 645, turnover: '15.8x', status: 'Low Stock' }
-  ]
+  const [atRiskInventory, setAtRiskInventory] = useState([])
 
   const recentCustomers = [
     { initials: 'SJ', name: 'Sarah Johnson', spent: '$2,450' },
@@ -94,10 +90,11 @@ export default function Dashboard() {
     { initials: 'MB', name: 'Mia Brown', spent: '$1,430' }
   ]
 
-  const staffPerformance = [
-    { name: 'Alex Rodriguez', percent: 94 },
-    { name: 'Sarah Chen', percent: 91 },
-    { name: 'Jordan Lee', percent: 88 }
+  const upcomingShifts = [
+    { initials: 'DP', name: 'David Park', role: 'Lead Barista', time: '2:00 PM – 10:00 PM', eta: '1h 30m', status: 'Starting Soon' },
+    { initials: 'MS', name: 'Maya Singh', role: 'Barista', time: '3:00 PM – 9:00 PM', eta: '2h 30m', status: 'Upcoming' },
+    { initials: 'RC', name: 'Ryan Chen', role: 'Barista', time: '4:00 PM – 8:00 PM', eta: '3h 30m', status: 'Upcoming' },
+    { initials: 'AW', name: 'Alex Wong', role: 'Barista', time: '6:00 PM – 11:00 PM', eta: '5h 30m', status: 'Later Today' }
   ]
 
   // Fetch today's and yesterday's revenue from Supabase and compute top products
@@ -167,6 +164,39 @@ export default function Dashboard() {
       setTopProducts(top)
     }
     fetchRevenue()
+  }, [])
+
+  // Fetch most at-risk inventory (lowest actual/par ratio)
+  useEffect(() => {
+    async function fetchInventory() {
+      const { data, error } = await supabase
+        .from('inventory')
+        .select('category, actual_level, par_level, unit, unit_cost, value, turnover, status')
+
+      if (error) {
+        console.error('Failed to fetch inventory:', error)
+        return
+      }
+
+      const scored = (data || []).map((row) => {
+        const par = Number(row.par_level || 0)
+        const actual = Number(row.actual_level || 0)
+        const ratio = par === 0 ? 1 : actual / par
+        return {
+          category: row.category,
+          stock: actual,
+          unit: row.unit || 'units',
+          par,
+          value: Number(row.value || actual * Number(row.unit_cost || 0)),
+          status: row.status || (ratio >= 0.6 ? 'Optimal' : ratio >= 0.35 ? 'Good' : 'Low Stock'),
+          ratio
+        }
+      })
+
+      scored.sort((a, b) => a.ratio - b.ratio)
+      setAtRiskInventory(scored.slice(0, 4))
+    }
+    fetchInventory()
   }, [])
 
   return (
@@ -310,22 +340,28 @@ export default function Dashboard() {
                 <div className="inventory-cell">Category</div>
                 <div className="inventory-cell">Stock Level</div>
                 <div className="inventory-cell">Value</div>
-                <div className="inventory-cell">Turnover</div>
-                <div className="inventory-cell">Status</div>
+                <div className="inventory-cell inventory-status">Status</div>
               </div>
-              {inventory.map((row) => (
+              {(atRiskInventory.length ? atRiskInventory : []).map((row) => (
                 <div key={row.category} className="inventory-row">
                   <div className="inventory-cell inventory-category">{row.category}</div>
-                  <div className="inventory-cell">{row.stock} units</div>
+                  <div className="inventory-cell">{row.stock} {row.unit}</div>
                   <div className="inventory-cell">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(row.value)}</div>
-                  <div className="inventory-cell">{row.turnover}</div>
-                  <div className="inventory-cell">
+                  <div className="inventory-cell inventory-status">
                     <span className={`chip ${row.status === 'Optimal' ? 'green' : row.status === 'Good' ? 'gray' : 'red'}`}>
                       {row.status}
                     </span>
                   </div>
                 </div>
               ))}
+              {atRiskInventory.length === 0 && (
+                <div className="inventory-row">
+                  <div className="inventory-cell inventory-category">No inventory data yet</div>
+                  <div className="inventory-cell">—</div>
+                  <div className="inventory-cell">—</div>
+                  <div className="inventory-cell">—</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -354,19 +390,21 @@ export default function Dashboard() {
 
           <div className="analytics-card">
             <div className="card-header">
-              <h3>Staff Performance</h3>
+              <h3><Clock size={18} /> Upcoming Shifts</h3>
             </div>
-            <div className="list-card">
-              {staffPerformance.map((s) => (
-                <div key={s.name} className="list-item ops-item">
-                  <div className="list-left">
-                    <div className="list-title">{s.name}</div>
-                    <div className="progress-bar thin">
-                      <div className="progress-fill" style={{ width: `${s.percent}%` }}></div>
+            <div className="shift-list">
+              {upcomingShifts.map((s) => (
+                <div key={s.name} className="shift-item">
+                  <div className="shift-left">
+                    <div className="shift-avatar">{s.initials}</div>
+                    <div>
+                      <div className="shift-name">{s.name}</div>
+                      <div className="shift-meta">{s.role} • {s.time}</div>
                     </div>
                   </div>
-                  <div className="list-right">
-                    <div className="list-value">{s.percent}%</div>
+                  <div className="shift-right">
+                    <div className="shift-eta">{s.eta}</div>
+                    <span className={`badge ${s.status === 'Starting Soon' ? 'badge--orange' : s.status === 'Upcoming' ? 'badge--gray' : 'badge--outline'}`}>{s.status}</span>
                   </div>
                 </div>
               ))}

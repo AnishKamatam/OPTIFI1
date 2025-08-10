@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed:boba": "node ./scripts/seedBoba.js"
+    "seed:boba": "node ./scripts/seedBoba.js",
+    "db:create:inventory": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_inventory.sql','utf8'))\" | cat",
+    "seed:inventory": "node ./scripts/seedInventory.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
