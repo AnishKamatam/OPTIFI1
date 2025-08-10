@@ -319,6 +319,7 @@ export default function Dashboard() {
             <div key={section.header} className="sidebar-section">
               <div className="sidebar-section-title">{section.header}</div>
               <ul>
+<<<<<<< Updated upstream
                 {section.items.map((item) => (
                   <li 
                     key={item.label} 
@@ -330,6 +331,17 @@ export default function Dashboard() {
                     <span className="nav-label">{item.label}</span>
                   </li>
                 ))}
+=======
+            {section.items.map((item) => (
+              <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
+                <item.icon className="nav-icon" size={18} />
+                <span className="nav-label">{item.label}</span>
+                {item.label === 'Finances' && (
+                  <a href="/financials" style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>Open</a>
+                )}
+              </li>
+            ))}
+>>>>>>> Stashed changes
               </ul>
             </div>
           ))}
@@ -489,10 +501,29 @@ export default function Dashboard() {
               </div>
             </div>
 
+<<<<<<< Updated upstream
             <div className="bottom-row">
               <div className="analytics-card">
                 <div className="card-header">
                   <h3>Upcoming Shifts</h3>
+=======
+        <div className="analytics-row" id="financials">
+          <div className="analytics-card">
+            <div className="card-header">
+              <h3>Top Selling Products</h3>
+            </div>
+            <div className="list-card">
+              {topProducts.map((p) => (
+                <div key={p.name} className="list-item">
+                  <div className="list-left">
+                    <div className="list-title">{p.name}</div>
+                    <div className="list-sub">{p.meta}</div>
+                  </div>
+                  <div className="list-right">
+                    <div className="list-value">{p.value}</div>
+                    <div className="trend-positive">{p.trend}</div>
+                  </div>
+>>>>>>> Stashed changes
                 </div>
                 <div className="shift-list">
                   {upcomingShifts.map((s) => (

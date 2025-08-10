@@ -39,6 +39,9 @@ const CATEGORIES = {
   Marketing: [
     ['PrintWorks', 'Flyers & posters'],
     ['SocialBuzz Agency', 'Social media ads']
+  ],
+  'Sales Revenue': [
+    ['POS Settlement', 'Daily sales settlement']
   ]
 }
 
@@ -74,11 +77,26 @@ async function main() {
   const rows = []
   let expenseId = 8000
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    // Optionally add one revenue record for the day (70% chance)
+    if (Math.random() < 0.7) {
+      const [supplier, description] = CATEGORIES['Sales Revenue'][0]
+      rows.push({
+        expense_id: expenseId++,
+        date: d.toISOString().slice(0, 10),
+        category: 'Sales Revenue',
+        supplier,
+        description,
+        amount: Number(rand(800, 3000).toFixed(2)),
+        payment_method: pick(['Bank Deposit', 'Card Settlement'])
+      })
+    }
+
     const num = Math.floor(Math.random() * (maxPerDay - minPerDay + 1)) + minPerDay
     for (let i = 0; i < num; i++) {
       const category = pick(Object.keys(CATEGORIES))
       const [supplier, description] = pick(CATEGORIES[category])
       if (category === 'Rent' && Math.random() < 0.8) continue
+      if (category === 'Sales Revenue') continue // already added above to avoid multiples
       rows.push({
         expense_id: expenseId++,
         date: d.toISOString().slice(0, 10),

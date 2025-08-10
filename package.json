@@ -21,6 +21,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
     "lucide-react": "^0.539.0",
+    "react-router-dom": "^6.26.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
