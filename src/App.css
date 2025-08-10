@@ -1,42 +1,79 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* Reset demo styles */
+#root { max-width: none; padding: 0; text-align: left; }
 
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 10;
+}
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 84px;
+}
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.nav-links {
+  display: flex;
+  gap: 36px;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.nav-actions { display: flex; align-items: center; gap: 12px; }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1px solid #0f172a;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+}
+.button--ghost {
+  background: transparent;
+  color: #0f172a;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Hero */
+.hero {
+  padding: 96px 0 128px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 72px;
+  align-items: center;
+}
+.hero-title {
+  margin: 0 0 20px;
+  font-size: clamp(56px, 7.2vw, 84px);
+  line-height: 1.05;
+  font-weight: 800;
+}
+.hero-subtitle {
+  font-size: 20px;
+  color: #334155;
+}
+.hero-cta { margin-top: 28px; display: flex; gap: 12px; }
+
+/* Placeholder gradient card */
+.hero-art {
+  border-radius: 20px;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16/12;
+  background: linear-gradient(135deg, #f43f5e 0%, #d946ef 30%, #f59e0b 100%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+@media (max-width: 1000px) {
+  .hero-grid { grid-template-columns: 1fr; }
 }
