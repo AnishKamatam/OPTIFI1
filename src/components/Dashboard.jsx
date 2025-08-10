@@ -20,6 +20,10 @@ export default function Dashboard() {
   const [yesterdayRevenue, setYesterdayRevenue] = useState(null)
   const [avgTransaction, setAvgTransaction] = useState(null)
   const [yesterdayAvgTransaction, setYesterdayAvgTransaction] = useState(null)
+  const [topProducts, setTopProducts] = useState([])
+  const [upcomingShifts, setUpcomingShifts] = useState([])
+  const [staffOnHand, setStaffOnHand] = useState(null)
+  const [recentTransactions, setRecentTransactions] = useState([])
 
   const handleSignOut = async () => {
     try {
@@ -74,28 +78,32 @@ export default function Dashboard() {
 
   const topMetrics = [
     { title: 'Foot Traffic', value: '1,247', delta: { text: '+8.2% Today', positive: true } },
-    { title: 'Staff On Hand', value: '6', delta: { text: '+1 vs Yesterday', positive: true } },
+    { title: 'Staff On Hand', value: staffOnHand === null ? '—' : String(staffOnHand) },
     { title: 'Avg Transaction', value: avgTransaction === null ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(avgTransaction), delta: avgDelta }
   ]
 
-  const [topProducts, setTopProducts] = useState([])
+
 
   // operations card replaced by inventory table
 
   const [atRiskInventory, setAtRiskInventory] = useState([])
 
-  const recentCustomers = [
-    { initials: 'SJ', name: 'Sarah Johnson', spent: '$2,450' },
-    { initials: 'AR', name: 'Alex Rodriguez', spent: '$1,980' },
-    { initials: 'MB', name: 'Mia Brown', spent: '$1,430' }
-  ]
+  // Format helpers
 
-  const upcomingShifts = [
-    { initials: 'DP', name: 'David Park', role: 'Lead Barista', time: '2:00 PM – 10:00 PM', eta: '1h 30m', status: 'Starting Soon' },
-    { initials: 'MS', name: 'Maya Singh', role: 'Barista', time: '3:00 PM – 9:00 PM', eta: '2h 30m', status: 'Upcoming' },
-    { initials: 'RC', name: 'Ryan Chen', role: 'Barista', time: '4:00 PM – 8:00 PM', eta: '3h 30m', status: 'Upcoming' },
-    { initials: 'AW', name: 'Alex Wong', role: 'Barista', time: '6:00 PM – 11:00 PM', eta: '5h 30m', status: 'Later Today' }
-  ]
+  // Helpers for shifts formatting
+  const toLocalTime = (iso) => {
+    const d = new Date(iso)
+    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  }
+  const diffToNow = (iso) => {
+    const ms = new Date(iso) - new Date()
+    if (ms <= 0) return 'Now'
+    const mins = Math.round(ms / 60000)
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return h > 0 ? `${h}h ${m}m` : `${m}m`
+  }
+  const initialsFromName = (name) => name.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase()
 
   // Fetch today's and yesterday's revenue from Supabase and compute top products
   useEffect(() => {
@@ -166,6 +174,91 @@ export default function Dashboard() {
     fetchRevenue()
   }, [])
 
+  // Fetch recent transactions (latest 8)
+  useEffect(() => {
+    async function fetchTransactions() {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('date, category, supplier, description, amount, payment_method')
+        .order('date', { ascending: false })
+        .limit(8)
+      if (error) {
+        console.error('Failed to fetch transactions:', error)
+        return
+      }
+      const formatted = (data || []).map((t) => ({
+        supplier: t.supplier,
+        description: t.description,
+        category: t.category,
+        dateStr: new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+        amountStr: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(t.amount || 0)),
+        method: t.payment_method || '—'
+      }))
+      setRecentTransactions(formatted)
+    }
+    fetchTransactions()
+  }, [])
+  // Fetch upcoming shifts (next 24h) and current staff on hand
+  useEffect(() => {
+    async function fetchShifts() {
+      const { data: employees, error: empErr } = await supabase
+        .from('employees')
+        .select('employee_id, full_name, role')
+      if (empErr) {
+        console.error('Failed to fetch employees:', empErr)
+        return
+      }
+      const idToEmployee = new Map(employees.map(e => [e.employee_id, e]))
+
+      const now = new Date()
+      const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+      const nowIso = now.toISOString()
+      const in24Iso = in24h.toISOString()
+
+      const { data: shifts, error: shErr } = await supabase
+        .from('timesheets')
+        .select('employee_id, role, scheduled_start, scheduled_end, status')
+        .gte('scheduled_start', nowIso)
+        .lte('scheduled_start', in24Iso)
+        .order('scheduled_start', { ascending: true })
+      if (!shErr) {
+        const mapped = (shifts || []).map(s => {
+          const emp = idToEmployee.get(s.employee_id)
+          const name = emp?.full_name || `Emp ${s.employee_id}`
+          const role = emp?.role || s.role
+          const time = `${toLocalTime(s.scheduled_start)} – ${toLocalTime(s.scheduled_end)}`
+          let status = 'Upcoming'
+          const minsUntil = Math.round((new Date(s.scheduled_start) - now) / 60000)
+          if (minsUntil <= 30) status = 'Starting Soon'
+          else if (minsUntil > 240) status = 'Later Today'
+          return { employeeId: s.employee_id, start: s.scheduled_start, initials: initialsFromName(name), name, role, time, eta: diffToNow(s.scheduled_start), status }
+        })
+        const dedup = []
+        const seen = new Set()
+        for (const item of mapped) {
+          const k = item.employeeId || item.name
+          if (seen.has(k)) continue
+          seen.add(k)
+          dedup.push(item)
+        }
+        setUpcomingShifts(dedup.slice(0, 8))
+      } else {
+        console.error('Failed to fetch upcoming shifts:', shErr)
+      }
+
+      const { count, error: cntErr } = await supabase
+        .from('timesheets')
+        .select('*', { count: 'exact', head: true })
+        .lte('scheduled_start', nowIso)
+        .gte('scheduled_end', nowIso)
+        .neq('status', 'No Show')
+      if (!cntErr) setStaffOnHand(count ?? 0)
+      else console.error('Failed to count staff on hand:', cntErr)
+    }
+    fetchShifts()
+    const id = setInterval(fetchShifts, 60000)
+    return () => clearInterval(id)
+  }, [])
   // Fetch most at-risk inventory (lowest actual/par ratio)
   useEffect(() => {
     async function fetchInventory() {
@@ -369,22 +462,30 @@ export default function Dashboard() {
         <div className="bottom-row">
           <div className="analytics-card">
             <div className="card-header">
-              <h3>Recent Customers</h3>
+              <h3>Recent Transactions</h3>
             </div>
             <div className="list-card">
-              {recentCustomers.map((c) => (
-                <div key={c.name} className="list-item">
-                  <div className="list-left" style={{ alignItems: 'center', gap: 12, display: 'flex' }}>
-                    <div className="member-avatar">{c.initials}</div>
-                    <div>
-                      <div className="list-title">{c.name}</div>
-                    </div>
+              {recentTransactions.map((t, idx) => (
+                <div key={`${t.supplier}-${idx}`} className="list-item">
+                  <div className="list-left">
+                    <div className="list-title">{t.supplier}</div>
+                    <div className="list-sub">{t.category} • {t.dateStr}</div>
+                    <div className="list-sub" style={{ color: '#94a3b8' }}>{t.description}</div>
                   </div>
                   <div className="list-right">
-                    <div className="list-value">{c.spent}</div>
+                    <div className="list-value">{t.amountStr}</div>
+                    <div className="list-sub">{t.method}</div>
                   </div>
                 </div>
               ))}
+              {recentTransactions.length === 0 && (
+                <div className="list-item">
+                  <div className="list-left">
+                    <div className="list-title">No transactions yet</div>
+                    <div className="list-sub">Seed with npm run seed:transactions</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -394,7 +495,7 @@ export default function Dashboard() {
             </div>
             <div className="shift-list">
               {upcomingShifts.map((s) => (
-                <div key={s.name} className="shift-item">
+                <div key={`${s.employeeId}-${s.start}`} className="shift-item">
                   <div className="shift-left">
                     <div className="shift-avatar">{s.initials}</div>
                     <div>

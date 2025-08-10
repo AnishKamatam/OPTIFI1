@@ -30,11 +30,12 @@ async function main() {
   const { data: employees, error: empErr } = await supabase.from('employees').select('employee_id, role, base_pay_rate')
   if (empErr) { console.error(empErr.message); process.exit(1) }
 
-  const today = new Date('2025-08-10T00:00:00Z')
+  const today = new Date()
+  // Generate 14 days centered around today: 7 days past, 7 days future
+  const start = new Date(today)
+  start.setDate(start.getDate() - 7)
   const end = new Date(today)
-  end.setDate(end.getDate() - 1)
-  const start = new Date(end)
-  start.setDate(start.getDate() - 13)
+  end.setDate(end.getDate() + 6)
 
   const dates = []
   for (let i = 0; i < 14; i++) {

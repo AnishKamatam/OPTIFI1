@@ -14,7 +14,9 @@
     "db:create:employees": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_employees.sql','utf8'))\" | cat",
     "seed:employees": "node ./scripts/seedEmployees.js",
     "db:create:timesheets": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_timesheets.sql','utf8'))\" | cat",
-    "seed:timesheets": "node ./scripts/seedTimesheets.js"
+    "seed:timesheets": "node ./scripts/seedTimesheets.js",
+    "db:create:transactions": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_transactions.sql','utf8'))\" | cat",
+    "seed:transactions": "node ./scripts/seedTransactions.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
