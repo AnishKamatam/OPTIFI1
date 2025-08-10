@@ -485,12 +485,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-<<<<<<< Updated upstream
             <div className="bottom-row">
               <div className="analytics-card">
                 <div className="card-header">
                   <h3>Upcoming Shifts</h3>
-=======
         <div className="analytics-row" id="financials">
           <div className="analytics-card">
             <div className="card-header">
@@ -507,7 +505,6 @@ export default function Dashboard() {
                     <div className="list-value">{p.value}</div>
                     <div className="trend-positive">{p.trend}</div>
                   </div>
->>>>>>> Stashed changes
             </div>
             <div className="shift-list">
                   {upcomingShifts.map((s) => (
