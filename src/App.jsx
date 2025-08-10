@@ -1,13 +1,66 @@
-import './App.css'
-import { useState } from 'react'
-import { useAuth } from './contexts/AuthContext'
-import AuthModal from './components/AuthModal'
-import UserProfile from './components/UserProfile'
-import Dashboard from './components/Dashboard'
+import React, { useState, useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
+import AuthModal from './components/AuthModal';
+import Dashboard from './components/Dashboard';
+import './App.css';
 
-export default function App() {
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const { user, loading } = useAuth()
+function App() {
+  const { user, loading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pricingPeriod, setPricingPeriod] = useState('monthly');
+  const [countedValues, setCountedValues] = useState({
+    starter: 49,
+    growth: 199,
+    enterprise: 499
+  });
+
+  const pricingData = {
+    monthly: {
+      starter: 49,
+      growth: 199,
+      enterprise: 499
+    },
+    yearly: {
+      starter: 490,
+      growth: 1990,
+      enterprise: 4990
+    }
+  };
+
+  useEffect(() => {
+    const animateCount = () => {
+      const currentValues = pricingData[pricingPeriod];
+      const duration = 1000; // 1 second animation
+      const steps = 60;
+      const stepDuration = duration / steps;
+      
+      let currentStep = 0;
+      
+      const timer = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        
+        setCountedValues({
+          starter: Math.floor(currentValues.starter * progress),
+          growth: Math.floor(currentValues.growth * progress),
+          enterprise: Math.floor(currentValues.enterprise * progress)
+        });
+        
+        if (currentStep >= steps) {
+          clearInterval(timer);
+          setCountedValues(currentValues);
+        }
+      }, stepDuration);
+      
+      return () => clearInterval(timer);
+    };
+    
+    animateCount();
+  }, [pricingPeriod]);
+
+  const handlePricingToggle = (period) => {
+    setPricingPeriod(period);
+  };
 
   if (loading) {
     return (
@@ -15,12 +68,12 @@ export default function App() {
         <div className="loading-spinner"></div>
         <p>Loading...</p>
       </div>
-    )
+    );
   }
 
   // If user is logged in, show dashboard
   if (user) {
-    return <Dashboard />
+    return <Dashboard />;
   }
 
   // If user is not logged in, show landing page
@@ -130,15 +183,26 @@ export default function App() {
             <p className="pricing-subtitle">Designed for every stage of your journey.</p>
             
             <div className="pricing-toggle">
-              <button className="toggle-option toggle-option--active">Monthly</button>
-              <button className="toggle-option">Yearly</button>
+              <button 
+                className={`toggle-option ${pricingPeriod === 'monthly' ? 'toggle-option--active' : ''}`}
+                onClick={() => handlePricingToggle('monthly')}
+              >
+                Monthly
+              </button>
+              <button 
+                className={`toggle-option ${pricingPeriod === 'yearly' ? 'toggle-option--active' : ''}`}
+                onClick={() => handlePricingToggle('yearly')}
+              >
+                Yearly
+              </button>
             </div>
           </div>
           
           <div className="pricing-grid">
             <div className="pricing-card">
               <h3>Free</h3>
-              <div className="pricing-amount">$0 per month</div>
+              <div className="pricing-amount">$0</div>
+              <div className="pricing-period">per {pricingPeriod === 'monthly' ? 'month' : 'year'}</div>
               <button className="button button--full">Get Started</button>
               <ul className="pricing-features">
                 <li>Access to 1 ERP module (Finance OR Operations)</li>
@@ -152,7 +216,8 @@ export default function App() {
             
             <div className="pricing-card">
               <h3>Starter</h3>
-              <div className="pricing-amount">$49 per month</div>
+              <div className="pricing-amount">${countedValues.starter}</div>
+              <div className="pricing-period">per {pricingPeriod === 'monthly' ? 'month' : 'year'}</div>
               <button className="button button--full">Subscribe</button>
               <ul className="pricing-features">
                 <li>Everything in Free +</li>
@@ -168,7 +233,8 @@ export default function App() {
             <div className="pricing-card pricing-card--popular">
               <div className="popular-badge">Popular</div>
               <h3>Growth</h3>
-              <div className="pricing-amount">$199 per month</div>
+              <div className="pricing-amount">${countedValues.growth}</div>
+              <div className="pricing-period">per {pricingPeriod === 'monthly' ? 'month' : 'year'}</div>
               <button className="button button--full">Subscribe</button>
               <ul className="pricing-features">
                 <li>Everything in Starter +</li>
@@ -183,7 +249,8 @@ export default function App() {
             
             <div className="pricing-card">
               <h3>Enterprise</h3>
-              <div className="pricing-amount">Custom starts at $499/month</div>
+              <div className="pricing-amount">${countedValues.enterprise}</div>
+              <div className="pricing-period">per {pricingPeriod === 'monthly' ? 'month' : 'year'}</div>
               <button className="button button--full">Contact Sales</button>
               <ul className="pricing-features">
                 <li>Everything in Growth +</li>
@@ -199,10 +266,13 @@ export default function App() {
         </div>
       </section>
 
+      {/* Auth Modal */}
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
     </div>
-  )
+  );
 }
+
+export default App;

@@ -243,7 +243,7 @@
 .pricing-header {
   text-align: center;
   margin-bottom: 64px;
-  max-width: 800px;
+  max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -296,7 +296,9 @@
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .pricing-card {
@@ -343,7 +345,40 @@
   font-size: 32px;
   font-weight: 800;
   color: #111827;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.pricing-period {
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
   margin-bottom: 24px;
+  text-transform: capitalize;
+}
+
+.pricing-amount-yearly {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yearly-savings {
+  background: #ecfdf5;
+  color: #047857;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #a7f3d0;
+  margin-bottom: 16px;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
 }
 
 .pricing-features {
@@ -1213,6 +1248,7 @@
   .pricing-grid {
     grid-template-columns: 1fr;
     gap: 32px;
+    max-width: 100%;
   }
 
   .pricing {
@@ -1221,7 +1257,26 @@
 
   .pricing-header {
     margin-bottom: 48px;
+    max-width: 100%;
   }
+
+  .pricing-amount-yearly {
+    justify-content: center;
+  }
+}
+
+/* Footer */
+.footer {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.footer p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 14px;
 }
 
 @media (max-width: 768px) {
