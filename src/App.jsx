@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import AuthModal from './components/AuthModal'
 import UserProfile from './components/UserProfile'
+import Dashboard from './components/Dashboard'
 
 export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -17,6 +18,12 @@ export default function App() {
     )
   }
 
+  // If user is logged in, show dashboard
+  if (user) {
+    return <Dashboard />
+  }
+
+  // If user is not logged in, show landing page
   return (
     <div>
       <header className="navbar">
@@ -29,19 +36,13 @@ export default function App() {
             <a href="#contact">Contact</a>
           </nav>
           <div className="nav-actions">
-            {user ? (
-              <UserProfile />
-            ) : (
-              <>
-                <button 
-                  className="button button--ghost" 
-                  onClick={() => setShowAuthModal(true)}
-                >
-                  Login
-                </button>
-                <a className="button" href="#request-demo">Request Demo</a>
-              </>
-            )}
+            <button 
+              className="button button--ghost" 
+              onClick={() => setShowAuthModal(true)}
+            >
+              Login
+            </button>
+            <a className="button" href="#request-demo">Request Demo</a>
           </div>
         </div>
       </header>
@@ -57,11 +58,12 @@ export default function App() {
               system that works like a full-time team.
             </p>
             <div className="hero-cta">
-              {user ? (
-                <a className="button" href="#dashboard">Go to Dashboard</a>
-              ) : (
-                <a className="button" href="#request-demo">Request Demo</a>
-              )}
+              <button 
+                className="button" 
+                onClick={() => setShowAuthModal(true)}
+              >
+                Get Started
+              </button>
             </div>
           </section>
 
