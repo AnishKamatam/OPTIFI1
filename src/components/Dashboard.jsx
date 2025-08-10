@@ -333,10 +333,7 @@ export default function Dashboard() {
       </aside>
 
       <main className="dashboard-main">
-        {currentPage === 'inventory' ? (
-          <InventoryPage onNavigateBack={() => setCurrentPage('dashboard')} />
-        ) : (
-          <>
+        <>
             <header className="dashboard-header">
               <div className="header-left">
                 <span className="live-tag">Live Data</span>
@@ -511,7 +508,6 @@ export default function Dashboard() {
               </div>
             </div>
           </>
-          )}
       </main>
     </div>
   )
