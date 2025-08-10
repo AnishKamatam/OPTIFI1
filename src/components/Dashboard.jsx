@@ -489,23 +489,8 @@ export default function Dashboard() {
               <div className="analytics-card">
                 <div className="card-header">
                   <h3>Upcoming Shifts</h3>
-        <div className="analytics-row" id="financials">
-          <div className="analytics-card">
-            <div className="card-header">
-              <h3>Top Selling Products</h3>
-            </div>
-            <div className="list-card">
-              {topProducts.map((p) => (
-                <div key={p.name} className="list-item">
-                  <div className="list-left">
-                    <div className="list-title">{p.name}</div>
-                    <div className="list-sub">{p.meta}</div>
-                  </div>
-                  <div className="list-right">
-                    <div className="list-value">{p.value}</div>
-                    <div className="trend-positive">{p.trend}</div>
-                  </div>
-            </div>
+                </div>
+        
             <div className="shift-list">
                   {upcomingShifts.map((s) => (
                     <div key={`${s.employeeId}-${s.start}`} className="shift-item">
@@ -526,7 +511,7 @@ export default function Dashboard() {
               </div>
             </div>
           </>
-        
+          )}
       </main>
     </div>
   )
