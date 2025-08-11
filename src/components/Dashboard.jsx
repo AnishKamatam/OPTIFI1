@@ -322,7 +322,7 @@ export default function Dashboard() {
                     <item.icon className="nav-icon" size={18} />
                     <span className="nav-label">{item.label}</span>
                     {item.label === 'Finances' && (
-                      <a href="/finances" style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>Open</a>
+                      <a href="/financials" style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>Open</a>
                     )}
                   </li>
                 ))}
@@ -480,15 +480,12 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-            </div>
 
-            <div className="bottom-row">
               <div className="analytics-card">
                 <div className="card-header">
                   <h3>Upcoming Shifts</h3>
                 </div>
-        
-            <div className="shift-list">
+                <div className="shift-list">
                   {upcomingShifts.map((s) => (
                     <div key={`${s.employeeId}-${s.start}`} className="shift-item">
                       <div className="shift-left">
