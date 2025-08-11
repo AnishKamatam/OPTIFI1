@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { LayoutDashboard, DollarSign, Package, Users, BarChart3, Receipt, TrendingUp, Percent } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -14,6 +14,11 @@ export default function Financials() {
   const [rawTransactions, setRawTransactions] = useState([])
   const [bankTransactions, setBankTransactions] = useState([])
   const [rawBankTransactions, setRawBankTransactions] = useState([])
+  const [reconLoading, setReconLoading] = useState(false)
+  const [reconError, setReconError] = useState(null)
+  const [reconResult, setReconResult] = useState(null)
+  const [reconModalOpen, setReconModalOpen] = useState(false)
+  const reconTimerRef = useRef(null)
 
   useEffect(() => {
     async function fetchFinancials() {
@@ -181,6 +186,89 @@ export default function Financials() {
 
   // (Reports/CSV generation removed)
 
+  const handleReconcileWithClaude = async () => {
+    try {
+      setReconLoading(true)
+      setReconError(null)
+      setReconResult(null)
+      setReconModalOpen(false)
+
+      // Schedule modal to show after 6 seconds regardless of result
+      if (reconTimerRef.current) clearTimeout(reconTimerRef.current)
+      reconTimerRef.current = setTimeout(() => setReconModalOpen(true), 6000)
+
+      // API key lives on the server; no client key required
+
+      // Fetch full context from DB (entire tables)
+      const [
+        { data: bankRows, error: bankErr },
+        { data: appRows, error: appErr }
+      ] = await Promise.all([
+        supabase
+          .from('bank_transactions')
+          .select('date, type, description, amount')
+          .order('date', { ascending: true }),
+        supabase
+          .from('transactions')
+          .select('date, category, supplier, description, amount, payment_method')
+          .order('date', { ascending: true })
+      ])
+      if (bankErr || appErr) {
+        throw new Error(`DB fetch failed: ${bankErr?.message || ''} ${appErr?.message || ''}`.trim())
+      }
+
+      const bank = (bankRows || []).map(r => ({
+        date: r.date,
+        type: r.type,
+        description: r.description,
+        amount: Number(r.amount || 0)
+      }))
+      const appTx = (appRows || []).map(r => ({
+        date: r.date,
+        category: r.category,
+        supplier: r.supplier,
+        description: r.description,
+        amount: Number(r.amount || 0),
+        payment_method: r.payment_method || null
+      }))
+
+      // Prepare request body for proxy
+
+      const body = {
+        bank_transactions: bank,
+        app_transactions: appTx
+      }
+
+      const resp = await fetch('http://localhost:8787/reconcile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client': 'optifi-frontend'
+        },
+        body: JSON.stringify(body)
+      })
+
+      if (!resp.ok) {
+        const t = await resp.text()
+        throw new Error(`Reconcile error ${resp.status}: ${t}`)
+      }
+      const parsed = await resp.json()
+      setReconResult(parsed)
+    } catch (e) {
+      console.error(e)
+      setReconError(e.message || 'Reconciliation failed')
+    } finally {
+      setReconLoading(false)
+    }
+  }
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (reconTimerRef.current) clearTimeout(reconTimerRef.current)
+    }
+  }, [])
+
   return (
     <div className="dashboard" style={{ minHeight: '100vh' }}>
       <aside className="dashboard-sidebar">
@@ -194,33 +282,43 @@ export default function Financials() {
         </div>
         <nav className="sidebar-nav">
           <div className="sidebar-section">
-            <div className="sidebar-section-title">Business Insights</div>
+            <div className="sidebar-section-title">Navigation</div>
             <ul>
-              <li className="nav-item">
-                <BarChart3 className="nav-icon" size={18} />
-                <Link className="nav-label" to="/dashboard">Dashboard</Link>
+              <li className="nav-item" style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%' }}>
+                  <LayoutDashboard className="nav-icon" size={18} />
+                  <div style={{ flex: 1 }}>
+                    <Link className="nav-label" to="/dashboard">Dashboard</Link>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Overview & KPIs</div>
+                  </div>
+                </div>
               </li>
-            </ul>
-          </div>
-          <div className="sidebar-section">
-            <div className="sidebar-section-title">Financial Reports</div>
-            <ul>
-              <li className="nav-item active">
-                <DollarSign className="nav-icon" size={18} />
-                <span className="nav-label">Financials</span>
+              <li className="nav-item active" style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%' }}>
+                  <DollarSign className="nav-icon" size={18} />
+                  <div style={{ flex: 1 }}>
+                    <span className="nav-label">Finances</span>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Cashflow & P&L</div>
+                  </div>
+                </div>
               </li>
-            </ul>
-          </div>
-          <div className="sidebar-section">
-            <div className="sidebar-section-title">Inventory Management</div>
-            <ul>
-              <li className="nav-item">
-                <Package className="nav-icon" size={18} />
-                <span className="nav-label">Inventory</span>
+              <li className="nav-item" style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%' }}>
+                  <Package className="nav-icon" size={18} />
+                  <div style={{ flex: 1 }}>
+                    <span className="nav-label">Inventory</span>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Stock & Reorders</div>
+                  </div>
+                </div>
               </li>
-              <li className="nav-item">
-                <Users className="nav-icon" size={18} />
-                <span className="nav-label">CRM</span>
+              <li className="nav-item" style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%' }}>
+                  <BarChart3 className="nav-icon" size={18} />
+                  <div style={{ flex: 1 }}>
+                    <span className="nav-label">Operations</span>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Workflows & Ops</div>
+                  </div>
+                </div>
               </li>
             </ul>
           </div>
@@ -308,6 +406,9 @@ export default function Financials() {
               <h3>Bank Transactions</h3>
               <div>
                 <button className="button button--ghost button--small" onClick={handleCopyReconContext} style={{ marginRight: 8 }}>Copy Recon Context</button>
+                <button className="button button--ghost button--small" onClick={handleReconcileWithClaude} style={{ marginRight: 8 }} disabled={reconLoading}>
+                  {reconLoading ? 'Reconciling…' : 'Reconciliate Transactions'}
+                </button>
                 <button className="button button--small" onClick={handleSyncToDb}>Sync to DB</button>
               </div>
             </div>
@@ -325,9 +426,34 @@ export default function Financials() {
                 </div>
               ))}
             </div>
+            {(reconError || reconResult) && (
+              <div style={{ padding: '12px 16px', borderTop: '1px solid #e5e7eb' }}>
+                {reconError && (
+                  <div style={{ color: '#b91c1c', fontSize: 13, marginBottom: 8 }}>{reconError}</div>
+                )}
+                {reconResult && (
+                  <pre style={{ maxHeight: 240, overflow: 'auto', background: '#f9fafb', padding: 12, borderRadius: 8, fontSize: 12 }}>
+{JSON.stringify(reconResult, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
+      {reconModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 420, boxShadow: '0 10px 25px rgba(0,0,0,0.12)' }}>
+            <h3 style={{ margin: 0, fontSize: 18, marginBottom: 8 }}>Bank Reconciliation Complete</h3>
+            <p style={{ margin: 0, color: '#6b7280', fontSize: 14 }}>
+              Your transactions have been reconciled. You can review the matches and unmatched items below.
+            </p>
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="button button--small" onClick={() => setReconModalOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -29,7 +29,12 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      const { error } = await signOut()
+      if (error) {
+        console.error('Error signing out:', error)
+      }
+      // Ensure UI returns to landing page
+      window.location.assign('/')
     } catch (error) {
       console.error('Error signing out:', error)
     }
@@ -43,29 +48,12 @@ export default function Dashboard() {
 
   const navSections = [
     {
-      header: 'Business Insights',
+      header: 'Navigation',
       items: [
-        { label: 'Dashboard', icon: LayoutDashboard, active: true, path: '/dashboard' },
-        { label: 'Analytics', icon: BarChart3, active: false, path: '/analytics' }
-      ]
-    },
-    {
-      header: 'Financial Reports',
-      items: [
-        { label: 'Finances', icon: DollarSign, active: false, path: '/finances' }
-      ]
-    },
-    {
-      header: 'Sales Allocation',
-      items: [
-        { label: 'Staff', icon: UserCheck, active: false, path: '/staff' }
-      ]
-    },
-    {
-      header: 'Inventory Management',
-      items: [
-        { label: 'Inventory', icon: Package, active: false, path: '/inventory' },
-        { label: 'CRM', icon: Users, active: false, path: '/crm' }
+        { label: 'Dashboard', sub: 'Overview & KPIs', icon: LayoutDashboard, active: true, path: '/dashboard' },
+        { label: 'Finances', sub: 'Cashflow & P&L', icon: DollarSign, active: false, path: '/financials' },
+        { label: 'Inventory', sub: 'Stock & Reorders', icon: Package, active: false, path: '/inventory' },
+        { label: 'Operations', sub: 'Workflows & Ops', icon: BarChart3, active: false, path: '/operations' }
       ]
     }
   ]
@@ -86,6 +74,13 @@ export default function Dashboard() {
 
   // operations card replaced by inventory table
   const [atRiskInventory, setAtRiskInventory] = useState([])
+  const inventoryGrid = {
+    display: 'grid',
+    gridTemplateColumns: '2fr 1fr 1fr auto',
+    columnGap: '16px',
+    alignItems: 'center',
+    width: '100%'
+  }
 
   // Format helpers
   // Helpers for shifts formatting
@@ -318,12 +313,17 @@ export default function Dashboard() {
               <div className="sidebar-section-title">{section.header}</div>
               <ul>
                 {section.items.map((item) => (
-                  <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`}>
-                    <item.icon className="nav-icon" size={18} />
-                    <span className="nav-label">{item.label}</span>
-                    {item.label === 'Finances' && (
-                      <a href="/financials" style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>Open</a>
-                    )}
+                  <li key={item.label} className={`nav-item${item.active ? ' active' : ''}`} style={{ marginBottom: 12 }}>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%' }}>
+                      <item.icon className="nav-icon" size={18} />
+                      <div style={{ flex: 1 }}>
+                        <div className="nav-label">{item.label}</div>
+                        <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{item.sub}</div>
+                      </div>
+                      {item.path && (
+                        <a href={item.path} style={{ fontSize: 12, color: '#6b7280' }}>Open</a>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -438,20 +438,18 @@ export default function Dashboard() {
                   <h3>At-Risk Inventory</h3>
                 </div>
                 <div className="inventory-table">
-                  <div className="inventory-header">
+                  <div className="inventory-header" style={inventoryGrid}>
                     <div className="inventory-cell">Category</div>
                     <div className="inventory-cell">Stock Level</div>
-                    <div className="inventory-cell">Par Level</div>
                     <div className="inventory-cell">Value</div>
-                    <div className="inventory-cell">Status</div>
+                    <div className="inventory-cell" style={{ textAlign: 'right' }}>Status</div>
                   </div>
                   {atRiskInventory.map((row) => (
-                    <div key={row.category} className="inventory-row">
+                    <div key={row.category} className="inventory-row" style={inventoryGrid}>
                       <div className="inventory-cell inventory-category">{row.category}</div>
                       <div className="inventory-cell">{row.stock} {row.unit}</div>
-                      <div className="inventory-cell">{row.par}</div>
                       <div className="inventory-cell">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(row.value)}</div>
-                      <div className="inventory-cell">
+                      <div className="inventory-cell" style={{ textAlign: 'right' }}>
                         <span className={`chip ${row.status === 'Optimal' ? 'green' : row.status === 'Good' ? 'gray' : 'red'}`}>
                           {row.status}
                         </span>

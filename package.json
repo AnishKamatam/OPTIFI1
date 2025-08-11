@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "server": "node server/index.js",
     "seed:boba": "node ./scripts/seedBoba.js",
     "db:create:inventory": "node -e \"process.stdout.write(require('fs').readFileSync('scripts/create_inventory.sql','utf8'))\" | cat",
     "seed:inventory": "node ./scripts/seedInventory.js",
@@ -20,6 +21,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
     "lucide-react": "^0.539.0",
     "react-router-dom": "^6.26.2",
     "react": "^19.1.1",
